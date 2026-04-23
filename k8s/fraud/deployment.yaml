@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-api
+  namespace: fraud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fraud-api
+  template:
+    metadata:
+      labels:
+        app: fraud-api
+    spec:
+      containers:
+      - name: fraud-api
+        image: 388691194728.dkr.ecr.us-east-1.amazonaws.com/fraud-detection-service:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENDPOINT_NAME
+          value: "xgboost-water-1773502392"
+        - name: AWS_REGION
+          value: "us-east-2"
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
