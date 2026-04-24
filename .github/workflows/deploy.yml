@@ -1,0 +1,38 @@
+name: Deploy ML Platform
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Connect to EKS
+        run: aws eks update-kubeconfig --region us-east-1 --name k8s-training-cluster
+
+      - name: Deploy Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/fraud/deployment.yaml
+          kubectl apply -f k8s/fraud/service.yaml
+          kubectl apply -f k8s/recommendations/deployment.yaml
+          kubectl apply -f k8s/recommendations/service.yaml
+          kubectl apply -f k8s/forecasting/deployment.yaml
+          kubectl apply -f k8s/forecasting/service.yaml
+
+      - name: Verify deployments
+        run: |
+          kubectl get pods -n fraud
+          kubectl get pods -n recommendations
+          kubectl get pods -n forecasting

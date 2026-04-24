@@ -20,11 +20,15 @@ spec:
         - containerPort: 8000
         env:
         - name: ENDPOINT_NAME
-          value: "xgboost-water-1773502392"
+          value: "recommendations-endpoint-v1"
         - name: AWS_REGION
           value: "us-east-2"
         - name: TEAM_NAME
           value: "recommendations"
+        volumeMounts:
+        - name: aws-credentials
+          mountPath: /root/.aws
+          readOnly: true
         readinessProbe:
           httpGet:
             path: /ready
@@ -37,3 +41,7 @@ spec:
             port: 8000
           initialDelaySeconds: 5
           periodSeconds: 10
+      volumes:
+      - name: aws-credentials
+        secret:
+          secretName: aws-credentials
